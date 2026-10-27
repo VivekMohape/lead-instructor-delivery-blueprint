@@ -27,18 +27,26 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-HTML_FILE = Path(__file__).resolve().parent / "lead_instructor_delivery_blueprint_interview.html"
+APP_DIR = Path(__file__).resolve().parent
 
-if not HTML_FILE.exists():
-    st.error("The blueprint HTML file is missing. Keep app.py and the HTML file in the same folder.")
+# Accept either filename so the app works with the filename already in the GitHub repo
+# or with the interview-specific filename from the provided package.
+HTML_CANDIDATES = (
+    APP_DIR / "lead_instructor_delivery_blueprint.html",
+    APP_DIR / "lead_instructor_delivery_blueprint_interview.html",
+)
+HTML_FILE = next((path for path in HTML_CANDIDATES if path.is_file()), None)
+
+if HTML_FILE is None:
+    st.error("The blueprint HTML file is missing.")
+    st.markdown(
+        "Keep **app.py** and one of these HTML files in the same folder as the app:\n\n"
+        "- `lead_instructor_delivery_blueprint.html`\n"
+        "- `lead_instructor_delivery_blueprint_interview.html`"
+    )
     st.stop()
 
 html_content = HTML_FILE.read_text(encoding="utf-8")
 
-# The blueprint is self-contained, including its CSS and JavaScript.
-# A tall, scrollable iframe preserves the original layout and interactions.
-components.html(
-    html_content,
-    height=1000,
-    scrolling=True,
-)
+# Render the self-contained HTML, including its CSS and JavaScript, in a scrollable iframe.
+components.html(html_content, height=1000, scrolling=True)
