@@ -1,5 +1,4 @@
 from pathlib import Path
-
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -10,7 +9,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# Keep Streamlit's outer shell minimal so the embedded HTML can use the available width.
+APP_DIR = Path(__file__).resolve().parent
+HTML_FILE = APP_DIR / "lead_instructor_delivery_blueprint.html"
+
+# Keep the Streamlit shell minimal and give the embedded document the full viewport.
 st.markdown(
     """
     <style>
@@ -21,32 +23,21 @@ st.markdown(
         padding: 0 !important;
       }
       [data-testid="stVerticalBlock"] { gap: 0; }
-      iframe { border: 0 !important; }
+      iframe { border: 0 !important; display: block; width: 100%; }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-APP_DIR = Path(__file__).resolve().parent
-
-# Accept either filename so the app works with the filename already in the GitHub repo
-# or with the interview-specific filename from the provided package.
-HTML_CANDIDATES = (
-    APP_DIR / "lead_instructor_delivery_blueprint.html",
-    APP_DIR / "lead_instructor_delivery_blueprint_interview.html",
-)
-HTML_FILE = next((path for path in HTML_CANDIDATES if path.is_file()), None)
-
-if HTML_FILE is None:
+if not HTML_FILE.is_file():
     st.error("The blueprint HTML file is missing.")
     st.markdown(
-        "Keep **app.py** and one of these HTML files in the same folder as the app:\n\n"
-        "- `lead_instructor_delivery_blueprint.html`\n"
-        "- `lead_instructor_delivery_blueprint_interview.html`"
+        "Place **app.py** and **lead_instructor_delivery_blueprint.html** in the same folder."
     )
     st.stop()
 
 html_content = HTML_FILE.read_text(encoding="utf-8")
 
-# Render the self-contained HTML, including its CSS and JavaScript, in a scrollable iframe.
-components.html(html_content, height=1000, scrolling=True)
+# Keep the document inside a tall, independently scrollable iframe. This preserves
+# the fixed sidebar, in-page navigation, checkboxes, tabs, search, theme and print controls.
+components.html(html_content, height=1100, scrolling=True)
